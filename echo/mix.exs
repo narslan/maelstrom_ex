@@ -7,7 +7,7 @@ defmodule Maelstrom.MixProject do
       version: "0.1.0",
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
-      escript: [main_module: Maelstrom.EchoCli],
+      escript: escript_config(),
       deps: deps()
     ]
   end
@@ -21,9 +21,10 @@ defmodule Maelstrom.MixProject do
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
-    [
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
-    ]
+    []
+  end
+
+  defp escript_config do
+    [main_module: Echo]
   end
 end

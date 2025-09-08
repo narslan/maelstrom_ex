@@ -1,4 +1,4 @@
-defmodule Maelstrom.EchoCli do
+defmodule Echo do
   @moduledoc false
   def main(_args) do
     IO.stream(:stdio, :line)
