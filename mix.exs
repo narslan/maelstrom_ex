@@ -7,6 +7,7 @@ defmodule Maelstrom.MixProject do
       version: "0.1.0",
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
+      escript: [main_module: Maelstrom.EchoCli],
       deps: deps()
     ]
   end
