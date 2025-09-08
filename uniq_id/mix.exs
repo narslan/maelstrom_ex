@@ -1,13 +1,13 @@
-defmodule Maelstrom.MixProject do
+defmodule UniqId.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :maelstrom_ex,
+      app: :uniq_id,
       version: "0.1.0",
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
-      escript: [main_module: Echo],
+      escript: [main_module: UniqId],
       deps: deps()
     ]
   end
@@ -19,7 +19,6 @@ defmodule Maelstrom.MixProject do
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     []
   end
