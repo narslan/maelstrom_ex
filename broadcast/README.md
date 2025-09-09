@@ -1,7 +1,7 @@
 # Broadcast
 
 Challenge #3a: Single-Node Broadcast: https://fly.io/dist-sys/3a/
-
+Challenge #3b: Multi-Node Broadcast: https://fly.io/dist-sys/3b/
 # Requirements 
  "broadcast" workload which has 3 RPC message types: 
  broadcast, read, & topology. Our node will need to  
@@ -24,4 +24,5 @@ responses with  {"type": "topology_ok"}.
 
 
 mix escript.build  
-maelstrom test -w broadcast --bin broadcast --node-count 1 --time-limit 20 --rate 10
+Challenge #3a: maelstrom test -w broadcast --bin broadcast --node-count 1 --time-limit 20 --rate 10
+Challenge #3b: maelstrom test -w broadcast --bin broadcast --node-count 5 --time-limit 20 --rate 10

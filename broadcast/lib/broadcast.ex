@@ -2,11 +2,17 @@ defmodule Broadcast do
   @moduledoc false
   def main(_args) do
     IO.stream(:stdio, :line)
-    |> Stream.transform({nil, 1}, fn line, {node_id, counter} ->
+    |> Stream.transform(1, fn line, counter ->
       data = decode_json_line(line)
-      {reply, new_node_id} = process(data, node_id, counter)
-      encoded = encode_json_line(reply)
-      {[encoded], {new_node_id, counter + 1}}
+
+      case process(data, counter) do
+        :no_reply ->
+          {[], counter}
+
+        reply ->
+          encoded = encode_json_line(reply)
+          {[encoded], counter + 1}
+      end
     end)
     |> Stream.each(&IO.puts/1)
     |> Stream.run()
@@ -24,44 +30,66 @@ defmodule Broadcast do
     end
   end
 
-  defp process(data, node_id, counter) do
+  defp process(data, counter) do
     case data["body"]["type"] do
       "init" ->
         new_node_id = data["body"]["node_id"]
-        reply = reply(new_node_id, data, %{type: :init_ok}, counter)
-        {reply, new_node_id}
+        :ok = MessageStore.set_node_id(new_node_id)
+        reply(data, %{type: :init_ok}, counter)
 
       "echo" ->
-        reply = reply(node_id, data, %{type: :echo_ok, echo: data["body"]["echo"]}, counter)
-        {reply, node_id}
+        reply(data, %{type: :echo_ok, echo: data["body"]["echo"]}, counter)
 
       "broadcast" ->
-        :ok = MessageStore.add_message(data["body"]["message"])
-        reply = reply(node_id, data, %{type: :broadcast_ok}, counter)
-        {reply, node_id}
+        m = data["body"]["message"]
+
+        unless MessageStore.message_exists?(m) do
+          :ok = MessageStore.add_message(data["body"]["message"])
+
+          MessageStore.get_neighbors()
+          |> Enum.each(fn neighbor ->
+            send_message(neighbor, %{type: :broadcast, message: m})
+          end)
+        end
+
+        if data["body"]["msg_id"] do
+          reply(data, %{type: :broadcast_ok}, counter)
+        else
+          :no_reply
+        end
 
       "read" ->
         {:ok, msgs} = MessageStore.get_messages()
-        reply = reply(node_id, data, %{type: :read_ok, messages: msgs}, counter)
-        {reply, node_id}
+
+        reply(data, %{type: :read_ok, messages: msgs}, counter)
 
       "topology" ->
-        reply = reply(node_id, data, %{type: :topology_ok}, counter)
-        {reply, node_id}
+        :ok = MessageStore.set_neighbors(data["body"]["topology"])
+        reply(data, %{type: :topology_ok}, counter)
     end
   end
 
-  defp reply(node_id, data, reply_body, counter) do
+  defp reply(data, reply_body, counter) do
     body =
       reply_body
       |> Map.put(:in_reply_to, data["body"]["msg_id"])
       |> Map.put(:msg_id, counter)
 
     %{
-      "src" => node_id,
+      "src" => MessageStore.get_node_id(),
       "dest" => data["src"],
       "body" => body
     }
+  end
+
+  defp send_message(dest, body) do
+    msg = %{
+      "src" => MessageStore.get_node_id(),
+      "dest" => dest,
+      "body" => body
+    }
+
+    IO.puts(encode_json_line(msg))
   end
 
   defp encode_json_line(data) do
