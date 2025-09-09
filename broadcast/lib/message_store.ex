@@ -7,7 +7,7 @@ defmodule MessageStore do
 
   @impl true
   def init(_args) do
-    state = %{messages: [], neighbors: [], node_id: nil}
+    state = %{messages: [], neighbors: [], node_id: nil, next_msg_id: 1}
     {:ok, state}
   end
 
@@ -41,6 +41,12 @@ defmodule MessageStore do
     {:reply, state.node_id, state}
   end
 
+  def handle_call(:next_msg_id, _from, state) do
+    id = state.next_msg_id
+    new_state = %{state | next_msg_id: id + 1}
+    {:reply, id, new_state}
+  end
+
   def add_message(msg) do
     GenServer.call(__MODULE__, {:add_message, msg}, 10_000)
   end
@@ -67,5 +73,9 @@ defmodule MessageStore do
 
   def get_neighbors() do
     GenServer.call(__MODULE__, :get_neighbors, 10_000)
+  end
+
+  def next_msg_id() do
+    GenServer.call(__MODULE__, :next_msg_id)
   end
 end

@@ -3,6 +3,7 @@ defmodule Broadcast.Application do
 
   def start(_, _) do
     children = [
+      AckManager,
       MessageStore
     ]
 

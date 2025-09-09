@@ -2,46 +2,51 @@ defmodule Broadcast do
   @moduledoc false
   def main(_args) do
     IO.stream(:stdio, :line)
-    |> Stream.transform(1, fn line, counter ->
-      data = Network.decode_json_line(line)
-
-      case process(data, counter) do
-        :no_reply ->
-          {[], counter}
-
-        reply ->
-          encoded = Network.encode_json_line(reply)
-          {[encoded], counter + 1}
-      end
-    end)
-    |> Stream.each(&IO.puts/1)
+    |> Stream.each(&handle_line/1)
     |> Stream.run()
   end
 
-  defp process(data, counter) do
+  defp handle_line(line) do
+    data = Network.decode_json_line(line)
+
+    if in_reply_to = get_in(data, ["body", "in_reply_to"]) do
+      AckManager.ack(in_reply_to)
+    end
+
+    case process(data) do
+      :no_reply ->
+        :ok
+
+      reply ->
+        IO.puts(Network.encode_json_line(reply))
+        :ok
+    end
+  end
+
+  defp process(data) do
     case data["body"]["type"] do
       "init" ->
-        new_node_id = data["body"]["node_id"]
-        :ok = MessageStore.set_node_id(new_node_id)
-        Network.reply(data, %{type: :init_ok}, counter)
-
-      "echo" ->
-        Network.reply(data, %{type: :echo_ok, echo: data["body"]["echo"]}, counter)
+        node_id = get_in(data, ["body", "node_id"])
+        :ok = MessageStore.set_node_id(node_id)
+        Network.reply(data, %{type: "init_ok"})
 
       "broadcast" ->
-        m = data["body"]["message"]
+        m = get_in(data, ["body", "message"])
 
         unless MessageStore.message_exists?(m) do
-          :ok = MessageStore.add_message(data["body"]["message"])
+          :ok = MessageStore.add_message(m)
 
           MessageStore.get_neighbors()
           |> Enum.each(fn neighbor ->
-            Network.send_message(neighbor, %{type: :broadcast, message: m})
+            msg_id = MessageStore.next_msg_id()
+            body = %{"type" => "broadcast", "message" => m, "msg_id" => msg_id}
+            AckManager.track(msg_id, neighbor, body)
+            Network.send_message(neighbor, body)
           end)
         end
 
-        if data["body"]["msg_id"] do
-          Network.reply(data, %{type: :broadcast_ok}, counter)
+        if get_in(data, ["body", "msg_id"]) do
+          Network.reply(data, %{type: "broadcast_ok"})
         else
           :no_reply
         end
@@ -49,11 +54,18 @@ defmodule Broadcast do
       "read" ->
         {:ok, msgs} = MessageStore.get_messages()
 
-        Network.reply(data, %{type: :read_ok, messages: msgs}, counter)
+        Network.reply(data, %{type: :read_ok, messages: msgs})
 
       "topology" ->
-        :ok = MessageStore.set_neighbors(data["body"]["topology"])
-        Network.reply(data, %{type: :topology_ok}, counter)
+        :ok = MessageStore.set_neighbors(get_in(data, ["body", "topology"]))
+        Network.reply(data, %{type: :topology_ok})
+
+      "broadcast_ok" ->
+        if in_reply_to = get_in(data, ["body", "in_reply_to"]) do
+          AckManager.ack(in_reply_to)
+        end
+
+        :no_reply
     end
   end
 end

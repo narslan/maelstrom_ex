@@ -1,9 +1,9 @@
 defmodule Network do
-  def reply(data, reply_body, counter) do
+  def reply(data, reply_body) do
     body =
       reply_body
       |> Map.put(:in_reply_to, data["body"]["msg_id"])
-      |> Map.put(:msg_id, counter)
+      |> Map.put(:msg_id, MessageStore.next_msg_id())
 
     %{
       "src" => MessageStore.get_node_id(),
