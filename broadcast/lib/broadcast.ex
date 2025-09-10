@@ -9,10 +9,6 @@ defmodule Broadcast do
   defp handle_line(line) do
     data = Network.decode_json_line(line)
 
-    if in_reply_to = get_in(data, ["body", "in_reply_to"]) do
-      AckManager.ack(in_reply_to)
-    end
-
     case process(data) do
       :no_reply ->
         :ok
@@ -28,6 +24,7 @@ defmodule Broadcast do
       "init" ->
         node_id = get_in(data, ["body", "node_id"])
         :ok = MessageStore.set_node_id(node_id)
+        GenServer.cast(AntiEntropy, :start)
         Network.reply(data, %{type: "init_ok"})
 
       "broadcast" ->
@@ -36,16 +33,19 @@ defmodule Broadcast do
         unless MessageStore.message_exists?(m) do
           :ok = MessageStore.add_message(m)
 
-          MessageStore.get_neighbors()
-          |> Enum.each(fn neighbor ->
-            if neighbor != data["src"] do
-              Task.start(fn ->
+          Task.start(fn ->
+            neighbors = MessageStore.get_neighbors()
+
+            fanout = max(2, div(length(neighbors), 4))
+            targets = Enum.take_random(neighbors, fanout)
+
+            Enum.each(targets, fn neighbor ->
+              if neighbor != data["src"] do
                 msg_id = MessageStore.next_msg_id()
                 body = %{"type" => "broadcast", "message" => m, "msg_id" => msg_id}
-                AckManager.track(msg_id, neighbor, body)
                 Network.send_message(neighbor, body)
-              end)
-            end
+              end
+            end)
           end)
         end
 
@@ -57,18 +57,25 @@ defmodule Broadcast do
 
       "read" ->
         {:ok, msgs} = MessageStore.get_messages()
-
         Network.reply(data, %{type: :read_ok, messages: msgs})
 
+      "anti_entropy" ->
+        incoming = data["body"]["messages"]
+
+        Enum.each(incoming, fn m ->
+          unless MessageStore.message_exists?(m) do
+            :ok = MessageStore.add_message(m)
+          end
+        end)
+
+        :no_reply
+
       "topology" ->
-        :ok = MessageStore.set_neighbors(get_in(data, ["body", "topology"]))
-        Network.reply(data, %{type: :topology_ok})
+        nodes = Map.keys(get_in(data, ["body", "topology"]))
+        :ok = MessageStore.set_nodes(nodes)
+        Network.reply(data, %{type: "topology_ok"})
 
       "broadcast_ok" ->
-        if in_reply_to = get_in(data, ["body", "in_reply_to"]) do
-          AckManager.ack(in_reply_to)
-        end
-
         :no_reply
     end
   end

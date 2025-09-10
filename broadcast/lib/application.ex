@@ -3,8 +3,8 @@ defmodule Broadcast.Application do
 
   def start(_, _) do
     children = [
-      AckManager,
-      MessageStore
+      MessageStore,
+      AntiEntropy
     ]
 
     Supervisor.start_link(children, strategy: :one_for_one)
