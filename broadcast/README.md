@@ -62,5 +62,11 @@ Messages-per-operation: 68.28761
 Median latency:  451 ms
 Maximum latency: 787 ms
 ```
-Fazit: There is a reduction in messages-per-operation.
+Fazit: Reduction in messages-per-operation (~%20).
 
+###  Not to send ACK Messages in internode Communication.
+"We don’t actually need to send broadcast_ok for gossip messages… once a node has a message, we don’t care about further delivery acknowledgements"
+
+Messages-per-operation: 26.9332
+Median latency:  459 ms
+Maximum latency: 797 ms
