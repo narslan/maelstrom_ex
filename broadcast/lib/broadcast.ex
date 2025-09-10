@@ -38,10 +38,12 @@ defmodule Broadcast do
 
           MessageStore.get_neighbors()
           |> Enum.each(fn neighbor ->
-            msg_id = MessageStore.next_msg_id()
-            body = %{"type" => "broadcast", "message" => m, "msg_id" => msg_id}
-            AckManager.track(msg_id, neighbor, body)
-            Network.send_message(neighbor, body)
+            if neighbor != data["src"] do
+              msg_id = MessageStore.next_msg_id()
+              body = %{"type" => "broadcast", "message" => m, "msg_id" => msg_id}
+              AckManager.track(msg_id, neighbor, body)
+              Network.send_message(neighbor, body)
+            end
           end)
         end
 
