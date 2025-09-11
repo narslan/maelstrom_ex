@@ -7,7 +7,7 @@ defmodule Gcounter.MixProject do
       version: "0.1.0",
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
-      escript: [main_module: Gcounter],
+      escript: [main_module: Gset.Main],
       deps: deps()
     ]
   end

@@ -3,10 +3,10 @@ defmodule Network do
     body =
       reply_body
       |> Map.put(:in_reply_to, data["body"]["msg_id"])
-      |> Map.put(:msg_id, MessageStore.next_msg_id())
+      |> Map.put(:msg_id, Node.Store.next_msg_id())
 
     %{
-      "src" => MessageStore.get_node_id(),
+      "src" => Node.Store.get_node_id(),
       "dest" => data["src"],
       "body" => body
     }
@@ -14,7 +14,7 @@ defmodule Network do
 
   def send_message(dest, body) do
     msg = %{
-      "src" => MessageStore.get_node_id(),
+      "src" => Node.Store.get_node_id(),
       "dest" => dest,
       "body" => body
     }
