@@ -7,6 +7,8 @@ defmodule Gcounter.Application do
   def start(_type, _args) do
     children = [
       Node.Store,
+      Gcounter.Store.Inc,
+      Gcounter.Store.Dec,
       Gcounter.Store,
       Replicate
     ]

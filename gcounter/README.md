@@ -1,3 +1,6 @@
+
+mix escript.build
+maelstrom test -w g-counter --bin gcounter --time-limit 20 --rate 10
 # Gcounter
 
 Frage: Am Ende einer Dokumentation von Maelstrom ( "Counters") wird gesagt: "We've successfully built an AP counter service!". 
@@ -41,3 +44,19 @@ Das opfert Availability bei Partitionen.
 - CRDT-basierte Counters in Maelstrom sind AP: immer verfügbar, aber nur „eventual consistent“.
 
 - CP-Counter wäre ein völlig anderes Design: „strong consistency“, aber dann müssen Writes bei Partitionen fehlschlagen oder warten.
+
+Frage: Als "eventual consistent" meinen wir dass das System später Konsistenz erreicht, nicht wahr?
+
+Genau 👍
+
+„Eventual consistency“ bedeutet:
+
+Jetzt, während Partitionen oder Verzögerungen: verschiedene Nodes können unterschiedliche Stände haben (z. B. Counter auf n1 = 5, auf n2 = 8).
+
+Später, nachdem alle Nachrichten durch Anti-Entropy/Replication wieder geflossen sind: alle Nodes erreichen denselben Zustand (n1 = n2 = 8).
+
+Also:
+
+keine Garantie über wann sie gleich sind,
+
+aber die Garantie, dass sie irgendwann gleich sind, solange Kommunikation wieder möglich wird.

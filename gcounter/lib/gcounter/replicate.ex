@@ -1,6 +1,6 @@
 defmodule Replicate do
   use GenServer
-  @interval 500
+  @interval 2_000
 
   def start_link(_opts) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
@@ -16,7 +16,6 @@ defmodule Replicate do
   def handle_info(:tick, state) do
     neighbors = Node.Store.get_neighbors()
 
-    # call einmal
     snapshot = Gcounter.Store.read()
 
     IO.write(

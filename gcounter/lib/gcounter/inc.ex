@@ -1,4 +1,4 @@
-defmodule Gcounter.Store do
+defmodule Gcounter.Store.Inc do
   use GenServer
 
   def start_link(_opts) do
@@ -7,36 +7,31 @@ defmodule Gcounter.Store do
 
   @impl true
   def init(_args) do
-    state = %{
-      inc: nil,
-      dec: nil
-    }
+    state = %{}
 
     {:ok, state}
   end
 
   @impl true
   def handle_cast({:merge, values}, state) do
-    state = %{state | inc: Gcounter.Store.Inc.merge(values)}
-    state = %{state | inc: Gcounter.Store.Dec.merge(values)}
+    state =
+      Map.merge(state, values, fn _k, v1, v2 ->
+        max(v1, v2)
+      end)
+
     {:noreply, state}
   end
 
   def handle_cast({:add, delta}, state) do
-    state =
-      if delta <= 0 do
-        %{inc: Gcounter.Store.Inc.add(delta), dec: state.dec}
-      else
-        %{inc: state.inc, dec: Gcounter.Store.Dec.add(-delta)}
-      end
-
+    node_id = Node.Store.get_node_id()
+    state = Map.update(state, node_id, 0, fn existing_value -> existing_value + delta end)
     {:noreply, state}
   end
 
   @impl true
   def handle_call(:read, _from, state) do
-    delta = Gcounter.Store.Inc.read() - Gcounter.Store.Dec.read()
-    {:reply, delta, state}
+    sum = Map.values(state) |> Enum.sum()
+    {:reply, sum, state}
   end
 
   def add(delta) do

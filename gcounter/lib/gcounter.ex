@@ -30,8 +30,8 @@ defmodule Gcounter.Main do
         Network.reply(data, %{type: "init_ok"})
 
       "add" ->
-        element = get_in(data, ["body", "element"])
-        Gcounter.Store.add(element)
+        delta = get_in(data, ["body", "delta"])
+        Gcounter.Store.add(delta)
         Network.reply(data, %{type: "add_ok"})
 
       "read" ->
