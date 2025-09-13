@@ -37,7 +37,8 @@ defmodule SingleNode.Main do
           "Txn: #{inspect(txn)}\n"
         )
 
-        Network.reply(data, %{type: "txn_ok", txn: txn})
+        txn2 = Transactor.transact(txn)
+        Network.reply(data, %{type: "txn_ok", txn: txn2})
 
       "no_reply" ->
         :no_reply
