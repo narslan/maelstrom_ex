@@ -1,3 +1,4 @@
+# Channels
 1. Grundidee
 
 Ein Channel ist eine virtuelle Verbindung innerhalb einer bestehenden TCP-Verbindung zwischen Client und RabbitMQ-Server.
