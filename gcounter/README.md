@@ -1,9 +1,9 @@
+# Gcounter
 
 mix escript.build
 maelstrom test -w g-counter --bin gcounter --time-limit 20 --rate 10
-# Gcounter
 
-Frage: Am Ende einer Dokumentation von Maelstrom ( "Counters") wird gesagt: "We've successfully built an AP counter service!". 
+Frage: Am Ende eines Dokuments von Maelstrom ( "Counters") wird besagt: "We've successfully built an AP counter service!". 
 Ich dachte immer die CRDT dienen dazu, 
 Konsistenz zu erzielen, nicht unbedingt die Verfügbarkeit.
 

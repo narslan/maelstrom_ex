@@ -1,5 +1,9 @@
 # Gset
 
+```sh
+mix escript.build
+maelstrom test -w g-counter --bin gcounter --time-limit 20 --rate 10
+```
 ## Was ist ein CRDT?
 
 Ein CRDT ist ein Datentyp für verteilte Systeme, der sicherstellt, dass alle Replikate durch bloßes Austauschen von Informationen irgendwann denselben Zustand erreichen, ohne globale Locks oder Konsensus.

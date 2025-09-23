@@ -1,4 +1,4 @@
 # Echo
 
-Simple distributed Echo-RPC Server.
+Distributed Echo-RPC Server.
 

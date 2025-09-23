@@ -1,5 +1,10 @@
+# malestrom_ex
+This project includes distributed programming challenges and 
+taken notes to understand the details of the topic. 
+It is a work in progress.
 
-The challenges of Gossip Glomers are implemented in Elixir. Except Kafka Task.
+The challenges of Gossip Glomers are implemented in Elixir. Except Kafka Task. I'm planing to write a seperate log based KV server. 
+
 
 Challenge #1:  Echo (echo) https://fly.io/dist-sys/1/
 Challenge #2:  Unique ID Generation https://fly.io/dist-sys/2/
@@ -14,6 +19,5 @@ References:
 [Distributed Systems 4th edition](https://www.distributed-systems.net/index.php/books/ds4/)
 Maelstrom Documentation and ChatGPT.
 
-[Possible Optimizations to Broadcast Mechanisms and Data Structures]
 [What is CRDT?](gset/README.md)
 [Why we achieve AP instead of CP in Gcounter?] (gcounter/README.md)
