@@ -1,14 +1,26 @@
 # Broadcast
-
-Challenge #3a: Single-Node Broadcast: https://fly.io/dist-sys/3a/
-Challenge #3b: Multi-Node Broadcast: https://fly.io/dist-sys/3b/
-Challenge #3c: Fault Tolerant Broadcast: https://fly.io/dist-sys/3c/
-# Requirements 
+## Requirements 
  "broadcast" workload which has 3 RPC message types: 
  broadcast, read, & topology. Our node will need to  
  store the set of integer values that it sees from 
  broadcast messages so that they can be returned 
  later via the read message RPC.
+
+### Brodcasting Algorithm 
+
+"... epidemic algorithms are based on the theory of epi-
+demics, which studies the spreading of infectious diseases. In the case of
+large-scale distributed systems, instead of spreading diseases, they spread
+information. Research on epidemics for distributed systems also aims at an
+entirely different goal: whereas health organizations will do their best to
+prevent infectious diseases from spreading across large groups of people,
+designers of epidemic algorithms for distributed systems will try to “infect”
+all nodes with new information as fast as possible.
+A popular propagation model is that of anti-entropy. In this model, a
+node P picks another node Q at random, and subsequently exchanges updates
+with Q.
+" [Distributed Systems 4th edition](https://www.distributed-systems.net/index.php/books/ds4/)
+
 ### Broadcast
 The node gets {"type": "broadcast",  "message": 1000}, and in reply should return 
 {"type": "broadcast_ok"}. The message field is stored locally.
